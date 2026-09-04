@@ -23,8 +23,8 @@ jobs:
       - run: npm test
       - run: npm start
         env:
-          APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
-          APIFY_ACTOR_ID: ${{ vars.APIFY_ACTOR_ID }}
+          FOOTBALL_DATA_API_KEY: ${{ secrets.FOOTBALL_DATA_API_KEY }}
+          FOOTBALL_DATA_COMPETITIONS: PL
           TIMEZONE: Europe/Copenhagen
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
