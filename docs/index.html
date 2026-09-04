@@ -1,1 +1,39 @@
-<!doctype html><html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#07111f"><title>BetScope Dashboard</title><link rel="stylesheet" href="style.css"></head><body><header><div class="brand">B <span>BetScope</span><i>LIVE DATA</i></div><div class="hero"><div><small>DAGENS FODBOLDANALYSE</small><h1>Mulige bets.<br><em>Rangeret på data.</em></h1><p id="meta">Henter analyse...</p></div><button id="refresh">↻ Opdater data</button></div></header><main><section class="kpis"><article><b>◫</b><div><small>ANALYSEREDE KAMPE</small><strong id="total">0</strong><p>Dagens program</p></div></article><article><b>✓</b><div><small>GODKENDTE BETS</small><strong id="approved">0</strong><p>Består alle kriterier</p></div></article><article><b>↗</b><div><small>HØJESTE SCORE</small><strong id="topscore">0</strong><p>Ud af 100</p></div></article><article><b>★</b><div><small>ELITE PICKS</small><strong id="elite">0</strong><p>Score 90+</p></div></article></section><section class="toolbar"><div><small>RANGERET OVERSIGT</small><h2>Dagens bedste muligheder</h2></div><div><input id="search" placeholder="Søg hold eller liga"><select id="level"><option value="all">Alle niveauer</option><option value="approved">Godkendte</option><option value="elite">Elite 90+</option><option value="strong">Stærk 80+</option></select></div></section><section class="legend"><span>● Elite 90+</span><span>● Stærk 80-89</span><span>● Interessant 70-79</span></section><section id="list" class="grid"></section><section class="method"><small>MODELLENS FILTER</small><h2>De fem kriterier</h2><div><p><b>01</b>Målsnit over 1,00</p><p><b>02</b>H2H over 1,5 &gt; 80%</p><p><b>03</b>Scoret i mindst 4/5</p><p><b>04</b>Over 1,5 i mindst 4/5</p><p><b>05</b>BTTS mindst 60%</p></div></section><footer>Succesindekset er en statistisk rangering, ikke en garanti. Spil ansvarligt.</footer></main><script src="app.js"></script></body></html>
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <title>BetScope Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .near-misses { margin-top: 42px; padding-top: 30px; border-top: 1px solid var(--line); }
+    .near-misses > small { color: var(--green); font-weight: 800; letter-spacing: .13em; }
+    .near-misses h2 { margin: 8px 0 4px; }
+    .near-misses > p { margin: 0 0 18px; color: #8da1b4; font-size: 13px; }
+    .near-misses-list { display: grid; gap: 8px; }
+    .near-miss { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 15px 18px; background: #0a1929; border: 1px solid var(--line); border-radius: 12px; }
+    .near-miss > div { display: grid; gap: 5px; }
+    .near-miss > div > b { color: var(--green); font-size: 11px; }
+    .near-miss strong { color: #f4f7fa; font-size: 15px; }
+    .near-miss strong span { color: #71879b; font-size: 10px; text-transform: uppercase; margin: 0 5px; }
+    .near-miss small { color: #8da1b4; font-size: 11px; }
+    .near-miss p { margin: 0; color: #e3b66b; font-size: 12px; text-align: right; }
+    .near-miss p b { color: #f4f7fa; }
+    @media (max-width: 600px) { .near-miss { align-items: flex-start; flex-direction: column; gap: 10px; } .near-miss p { text-align: left; } }
+  </style>
+</head>
+<body>
+  <header><div class="brand">B <span>BetScope</span><i>LIVE DATA</i></div><div class="hero"><div><small>DAGENS FODBOLDANALYSE</small><h1>Mulige bets.<br><em>Rangeret på data.</em></h1><p id="meta">Henter analyse...</p></div><button id="refresh">↻ Opdater data</button></div></header>
+  <main>
+    <section class="kpis"><article><b>◫</b><div><small>ANALYSEREDE KAMPE</small><strong id="total">0</strong><p>Dagens program</p></div></article><article><b>✓</b><div><small>GODKENDTE BETS</small><strong id="approved">0</strong><p>Består alle kriterier</p></div></article><article><b>↗</b><div><small>HØJESTE SCORE</small><strong id="topscore">0</strong><p>Ud af 100</p></div></article><article><b>★</b><div><small>ELITE PICKS</small><strong id="elite">0</strong><p>Score 90+</p></div></article></section>
+    <section class="toolbar"><div><small>RANGERET OVERSIGT</small><h2>Dagens bedste muligheder</h2></div><div><input id="search" placeholder="Søg hold eller liga"><select id="level"><option value="all">Alle niveauer</option><option value="approved">Godkendte</option><option value="elite">Elite 90+</option><option value="strong">Stærk 80+</option></select></div></section>
+    <section class="legend"><span>● Elite 90+</span><span>● Stærk 80-89</span><span>● Interessant 70-79</span></section>
+    <section id="list" class="grid"></section>
+    <section class="near-misses"><small>HURTIGTÆT PÅ</small><h2>Kampe der næsten klarede kriterierne</h2><p>De bedste kandidater, der kun missede et eller flere kriterier.</p><div id="near-misses-list" class="near-misses-list"></div></section>
+    <section class="method"><small>MODELLENS FILTER</small><h2>De fem kriterier</h2><div><p><b>01</b>Målsnit over 1,00</p><p><b>02</b>H2H over 1,5 &gt; 80%</p><p><b>03</b>Scoret i mindst 4/5</p><p><b>04</b>Over 1,5 i mindst 4/5</p><p><b>05</b>BTTS mindst 60%</p></div></section>
+    <footer>Succesindekset er en statistisk rangering, ikke en garanti. Spil ansvarligt.</footer>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

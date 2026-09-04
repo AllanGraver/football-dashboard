@@ -74,5 +74,6 @@ await fs.writeFile('docs/data/results.json', JSON.stringify({
   updatedAt: new Date().toISOString(),
   totalMatches: todaysMatches.length,
   missing: output.missing,
-  results: output.results
+  results: output.results,
+  nearMisses: output.nearMisses
 }, null, 2));

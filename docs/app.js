@@ -1,1 +1,50 @@
-let data={results:[]};const $=s=>document.querySelector(s),pct=x=>Math.round((x||0)*100)+'%',esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),band=s=>s>=90?'elite':s>=80?'strong':s>=70?'watch':'low';function criterion(ok,t,v){return`<li class="${ok?'ok':'no'}"><i>${ok?'✓':'×'}</i><span>${t}<b>${v}</b></span></li>`}function card(x,i){let m=x.metrics||{},c=x.criteria||[];return`<article class="card ${band(x.score)}"><div class="head"><b>#${i+1}</b><label>${x.score>=90?'ELITE PICK':x.score>=80?'STÆRK':'INTERESSANT'}</label><time>${esc(x.kickoff||'Tid ukendt')}</time></div><div class="fixture"><small>${esc(x.league||'Liga ukendt')}</small><h3>${esc(x.home)}</h3><em>MOD</em><h3>${esc(x.away)}</h3></div><div class="ring" style="--score:${x.score}"><span><b>${x.score.toFixed(1)}</b><small>/100</small></span></div><div class="quick"><p><small>MÅLSNIT</small><b>${m.homeAvg.toFixed(2)} / ${m.awayAvg.toFixed(2)}</b></p><p><small>H2H O1,5</small><b>${pct(m.h2hOver15)}</b></p><p><small>SCORET 5</small><b>${m.hScored}/5 / ${m.aScored}/5</b></p></div><button class="details">Vis analyse ⌄</button><ul>${criterion(c[0],'Målsnit over 1,00',m.homeAvg.toFixed(2)+' / '+m.awayAvg.toFixed(2))}${criterion(c[1],'H2H over 1,5',pct(m.h2hOver15))}${criterion(c[2],'Scoret i mindst 4/5',m.hScored+'/5 · '+m.aScored+'/5')}${criterion(c[3],'Holdkampe over 1,5',pct(m.homeOver15)+' · '+pct(m.awayOver15))}${criterion(c[4],'Seneste BTTS',pct(m.recentBtts))}</ul></article>`}function render(){let q=$('#search').value.toLowerCase(),f=$('#level').value,xs=data.results.filter(x=>(x.home+' '+x.away+' '+x.league).toLowerCase().includes(q)&&(f==='all'||f==='approved'&&x.passed||f==='elite'&&x.score>=90||f==='strong'&&x.score>=80)).slice(0,10);$('#list').innerHTML=xs.length?xs.map(card).join(''):'<div class="empty">Ingen kampe matcher filteret.</div>';document.querySelectorAll('.details').forEach(b=>b.onclick=()=>b.parentElement.classList.toggle('open'))}async function load(){try{let r=await fetch('data/results.json?v='+Date.now(),{cache:'no-store'});data=await r.json();let ok=data.results.filter(x=>x.passed),top=Math.max(0,...data.results.map(x=>x.score));$('#total').textContent=data.totalMatches||0;$('#approved').textContent=ok.length;$('#topscore').textContent=top.toFixed(1);$('#elite').textContent=ok.filter(x=>x.score>=90).length;$('#meta').textContent=`Kampdato ${data.date||'-'} · Opdateret ${data.updatedAt?new Date(data.updatedAt).toLocaleString('da-DK'):'ikke endnu'}`;render()}catch{$('#meta').textContent='Kør GitHub-workflowet for at publicere dagens data.'}}$('#refresh').onclick=load;$('#search').oninput=render;$('#level').onchange=render;load();
+let data = { results: [], nearMisses: [] };
+const $ = selector => document.querySelector(selector);
+const pct = value => Math.round((value || 0) * 100) + '%';
+const esc = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
+const band = score => score >= 90 ? 'elite' : score >= 80 ? 'strong' : score >= 70 ? 'watch' : 'low';
+const criterion = (passed, title, value) => `<li class="${passed ? 'ok' : 'no'}"><i>${passed ? '✓' : '×'}</i><span>${title}<b>${value}</b></span></li>`;
+const criteriaTitles = ['Målsnit over 1,00', 'H2H over 1,5', 'Scoret i mindst 4/5', 'Holdkampe over 1,5', 'Seneste BTTS'];
+
+function card(match, index) {
+  const metrics = match.metrics || {};
+  const criteria = match.criteria || [];
+  return `<article class="card ${band(match.score)}"><div class="head"><b>#${index + 1}</b><label>${match.score >= 90 ? 'ELITE PICK' : match.score >= 80 ? 'STÆRK' : 'INTERESSANT'}</label><time>${esc(match.kickoff || 'Tid ukendt')}</time></div><div class="fixture"><small>${esc(match.league || 'Liga ukendt')}</small><h3>${esc(match.home)}</h3><em>MOD</em><h3>${esc(match.away)}</h3></div><div class="ring" style="--score:${match.score}"><span><b>${match.score.toFixed(1)}</b><small>/100</small></span></div><div class="quick"><p><small>MÅLSNIT</small><b>${metrics.homeAvg.toFixed(2)} / ${metrics.awayAvg.toFixed(2)}</b></p><p><small>H2H O1,5</small><b>${pct(metrics.h2hOver15)}</b></p><p><small>SCORET 5</small><b>${metrics.hScored}/5 / ${metrics.aScored}/5</b></p></div><button class="details">Vis analyse ⌄</button><ul>${criterion(criteria[0], criteriaTitles[0], metrics.homeAvg.toFixed(2) + ' / ' + metrics.awayAvg.toFixed(2))}${criterion(criteria[1], criteriaTitles[1], pct(metrics.h2hOver15))}${criterion(criteria[2], criteriaTitles[2], metrics.hScored + '/5 · ' + metrics.aScored + '/5')}${criterion(criteria[3], criteriaTitles[3], pct(metrics.homeOver15) + ' · ' + pct(metrics.awayOver15))}${criterion(criteria[4], criteriaTitles[4], pct(metrics.recentBtts))}</ul></article>`;
+}
+
+function nearMiss(match, index) {
+  const missed = (match.criteria || []).map((passed, criterionIndex) => passed ? '' : criteriaTitles[criterionIndex]).filter(Boolean);
+  return `<article class="near-miss"><div><b>#${index + 1}</b><strong>${esc(match.home)} <span>mod</span> ${esc(match.away)}</strong><small>${esc(match.league || 'Liga ukendt')} · Score ${match.score.toFixed(1)}/100 · ${(match.criteria || []).filter(Boolean).length}/5 kriterier</small></div><p><b>Manglede:</b> ${esc(missed.join(', '))}</p></article>`;
+}
+
+function render() {
+  const query = $('#search').value.toLowerCase();
+  const level = $('#level').value;
+  const matches = data.results.filter(match => (match.home + ' ' + match.away + ' ' + match.league).toLowerCase().includes(query) && (level === 'all' || level === 'approved' && match.passed || level === 'elite' && match.score >= 90 || level === 'strong' && match.score >= 80)).slice(0, 10);
+  $('#list').innerHTML = matches.length ? matches.map(card).join('') : '<div class="empty">Ingen kampe matcher filteret.</div>';
+  const nearMatches = data.nearMisses.filter(match => (match.home + ' ' + match.away + ' ' + match.league).toLowerCase().includes(query)).slice(0, 10);
+  $('#near-misses-list').innerHTML = nearMatches.length ? nearMatches.map(nearMiss).join('') : '<div class="empty">Ingen næsten-kandidater i dagens data.</div>';
+  document.querySelectorAll('.details').forEach(button => button.onclick = () => button.parentElement.classList.toggle('open'));
+}
+
+async function load() {
+  try {
+    const response = await fetch('data/results.json?v=' + Date.now(), { cache: 'no-store' });
+    data = await response.json();
+    const approved = data.results.filter(match => match.passed);
+    const topScore = Math.max(0, ...data.results.map(match => match.score));
+    $('#total').textContent = data.totalMatches || 0;
+    $('#approved').textContent = approved.length;
+    $('#topscore').textContent = topScore.toFixed(1);
+    $('#elite').textContent = approved.filter(match => match.score >= 90).length;
+    $('#meta').textContent = `Kampdato ${data.date || '-'} · Opdateret ${data.updatedAt ? new Date(data.updatedAt).toLocaleString('da-DK') : 'ikke endnu'}`;
+    render();
+  } catch {
+    $('#meta').textContent = 'Kør GitHub-workflowet for at publicere dagens data.';
+  }
+}
+
+$('#refresh').onclick = load;
+$('#search').oninput = render;
+$('#level').onchange = render;
+load();
