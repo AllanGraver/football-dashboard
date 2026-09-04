@@ -9,4 +9,4 @@
 
 Dashboardet viser KPI-kort, søgning, niveaufilter, en rangeret top 10 og udfoldelig analyse for alle fem kriterier. Data opdateres af workflowet. Knappen på siden genindlæser senest publicerede data.
 
-Workflowet henter kampe fra Football-Data.org v4 og bygger holdhistorik og H2H fra de seneste 365 dage. Standardkonkurrencen er Premier League (`PL`).
+Workflowet henter kampe fra Football-Data.org v4 og bygger holdhistorik og H2H fra de seneste 365 dage. Det henter som standard Premier League (`PL`), Bundesliga (`BL1`), Eredivisie (`DED`), Jupiler League (`BJL`), Eliteserien (`ELI`), Allsvenskan (`AL1`) og Superligaen (`DK1`).

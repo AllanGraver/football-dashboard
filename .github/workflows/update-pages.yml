@@ -26,7 +26,7 @@ jobs:
       - run: npm start
         env:
           FOOTBALL_DATA_API_KEY: ${{ secrets.FOOTBALL_DATA_API_KEY }}
-          FOOTBALL_DATA_COMPETITIONS: PL
+          FOOTBALL_DATA_COMPETITIONS: PL,BL1,DED,BJL,ELI,AL1,DK1
           TIMEZONE: Europe/Copenhagen
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
