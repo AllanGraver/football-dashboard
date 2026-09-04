@@ -29,7 +29,10 @@ async function fetchCompetition(code) {
   const response = await fetch(`https://api.football-data.org/v4/competitions/${encodeURIComponent(code)}/matches?${params}`, {
     headers: { 'X-Auth-Token': apiKey }
   });
-  if (!response.ok) throw Error(`Football-Data.org ${response.status}: ${await response.text()}`);
+  if (!response.ok) {
+    console.warn(`Springer ${code} over: Football-Data.org ${response.status}`);
+    return [];
+  }
   return (await response.json()).matches || [];
 }
 
